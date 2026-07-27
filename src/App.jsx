@@ -8,15 +8,15 @@ function App() {
 
 
   return (
-    <div>
+    <>
       <Header />
-      <div>
+      <main className="pt-16 md:pt-20 pb-24">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/create" element={<CreatePostPage />} />
         </Routes>
-      </div>
-    </div>
+      </main>
+    </>
   )
 }
 

@@ -43,7 +43,7 @@ export default function Header() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <>
             {/* Desktop Navigation - Hidden on mobile, visible on md+ */}
             <div className="hidden md:block">
                 <DesktopNavbar
@@ -62,7 +62,7 @@ export default function Header() {
             </div>
 
             {/* Mobile Navigation */}
-            <div className="md:hidden flex flex-col h-screen">
+            <>
                 <MobileTopBar
                     user={user}
                     signOut={signOut}
@@ -76,8 +76,8 @@ export default function Header() {
                     setActiveTab={setActiveTab}
                     onCreatePost={handleCreatePost}
                 />
-            </div>
+            </>
 
-        </div>
+        </>
     );
 }
