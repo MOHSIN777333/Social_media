@@ -10,7 +10,7 @@ function App() {
   return (
     <>
       <Header />
-      <main className="pt-16 md:pt-20 pb-24">
+      <main className="pt-16 md:pt-20 pb-24 dark:text-white dark:bg-[#09090B]  bg-slate-500/10 text-white">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/create" element={<CreatePostPage />} />
