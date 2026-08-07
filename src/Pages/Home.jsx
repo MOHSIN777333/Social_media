@@ -3,13 +3,10 @@ import PostItem from '../Components/PostItem'
 
 const Home = () => {
     return (
-        <div>
-            <h1>home</h1>
-            <main className="">
-                <PostItem />
-            </main>
+        <main className="h-full dark:text-white dark:bg-[#09090B]  bg-slate-500/10 text-white">
+            <PostItem />
+        </main>
 
-        </div>
 
     )
 }

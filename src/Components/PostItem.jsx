@@ -14,7 +14,6 @@ const PostItem = () => {
     const { data, error, isLoading } = useQuery({ queryKey: ["posts"], queryFn: fetchPost });
 
 
-    console.log(data);
 
     if (isLoading) {
         return <div>Loading Posts...</div>
@@ -25,13 +24,14 @@ const PostItem = () => {
     };
 
     return (
-        <section>
-            <h3>Recent Posts</h3>
-            <div className="">
+        // responsive grid layout for posts
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <h2 className="text-2xl font-bold tracking-tight dark:text-white">Recent Posts</h2>
+            <article className="mt-6 space-y-4">
                 {data && data.map((post) => (
                     <PostList post={post} key={post.id} />
                 ))}
-            </div>
+            </article>
         </section>
     )
 }

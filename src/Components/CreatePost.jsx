@@ -1,8 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { supabase } from "../supabase";
+import { useAuth } from "../context/Auth_Context";
 
-const createPost = async ({ title, content, image }) => {
+const createPost = async ({ title, content, image, avatar_url }) => {
     try {
         // Validate inputs
         if (!title || !content || !image) {
@@ -28,7 +29,7 @@ const createPost = async ({ title, content, image }) => {
         // Insert the post data into the 'posts' table
         const { data: postData, error: postError } = await supabase
             .from("posts")
-            .insert([{ title, content, image: getPublicUrlData.publicUrl }])
+            .insert([{ title, content, image: getPublicUrlData.publicUrl, avatar_url }])
             .select();
 
         // Check for insertion errors
@@ -47,7 +48,8 @@ const CreatePost = () => {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [image, setImage] = useState(null);
-
+    const { user } = useAuth()
+    console.log("user", user)
     const {
         mutate: createPostMutation,
         isPending,
@@ -57,7 +59,7 @@ const CreatePost = () => {
     });
     const handleSubmit = (e) => {
         e.preventDefault();
-        createPostMutation({ title, content, image });
+        createPostMutation({ title, content, image, avatar_url: user?.user_metadata?.avatar_url || null });
     };
     return (
         <form

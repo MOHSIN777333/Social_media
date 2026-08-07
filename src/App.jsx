@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router"
 import Header from "./Pages/Header"
 import Home from "./Pages/Home"
 import CreatePostPage from "./Pages/CreatePostPage"
+import PostPage from "./Pages/PostPage"
 // import { useThemeToggle } from "./context/ThemeToggle_Context.jsx"
 function App() {
 
@@ -14,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/create" element={<CreatePostPage />} />
+          <Route path="/post/:id" element={<PostPage />} />
         </Routes>
       </main>
     </>
