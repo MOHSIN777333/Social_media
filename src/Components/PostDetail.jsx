@@ -1,6 +1,7 @@
 import React from 'react'
 import { supabase } from '../supabase'
 import { useQuery } from '@tanstack/react-query';
+import LikeSection from './LikeSection';
 
 const fetchPostById = async (id) => {
     const { data, error } = await supabase.from("posts").select("*").eq("id", id)
@@ -38,6 +39,9 @@ const PostDetail = ({ postId }) => {
                     </div>
                 </div>
             ))}
+            <div>
+                <LikeSection postId={postId} />
+            </div>
         </article>
     )
 }

@@ -2,7 +2,6 @@ import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { supabase } from "../supabase";
 import { useAuth } from "../context/Auth_Context";
-
 const createPost = async ({ title, content, image, avatar_url }) => {
     try {
         // Validate inputs
@@ -41,6 +40,9 @@ const createPost = async ({ title, content, image, avatar_url }) => {
     } catch (error) {
         console.error("Error creating post:", error);
         throw error;
+    } finally {
+        window.location.href = "/"; // Redirect to the home page after post creation
+        // await supabase.storage.from("images").remove([filePath]);
     }
 };
 
