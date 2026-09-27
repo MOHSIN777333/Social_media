@@ -1,4 +1,3 @@
-import React from "react";
 import {
     useMutation,
     useQuery,
@@ -10,178 +9,96 @@ import {
     Loader2,
 } from "lucide-react";
 
-import { supabase } from "../supabase";
+import { getVotes, submitVote } from "../api";
 import { useAuth } from "../context/Auth_Context";
+import { useToast } from "../context/Toast_Context";
 
-// =====================================================
-// Fetch votes
-// =====================================================
-const fetchVotes = async (postId) => {
-    if (!postId) {
-        throw new Error("Post ID is required");
-    }
-
-    const { data, error } = await supabase
-        .from("votes")
-        .select("user_id, vote")
-        .eq("post_id", postId);
-
-    if (error) {
-        throw error;
-    }
-
-    return data ?? [];
-};
-
-// =====================================================
-// Create / Update / Delete vote
-// =====================================================
-const votePost = async ({ postId, userId, voteType }) => {
-    if (!postId) {
-        throw new Error("Post ID is required");
-    }
-
-    if (!userId) {
-        throw new Error("Please login first");
-    }
-
-    if (![1, -1].includes(voteType)) {
-        throw new Error("Invalid vote type");
-    }
-
-    const { data: existingVote, error: fetchError } = await supabase
-        .from("votes")
-        .select("id, vote")
-        .eq("post_id", postId)
-        .eq("user_id", userId)
-        .maybeSingle();
-
-    if (fetchError) {
-        throw fetchError;
-    }
-
-    // User clicked the same vote again -> remove vote
-    if (existingVote?.vote === voteType) {
-        const { error: deleteError } = await supabase
-            .from("votes")
-            .delete()
-            .eq("id", existingVote.id);
-
-        if (deleteError) {
-            throw deleteError;
-        }
-
-        return {
-            action: "deleted",
-            voteType: null,
-        };
-    }
-
-    // User changes vote
-    if (existingVote) {
-        const { error: updateError } = await supabase
-            .from("votes")
-            .update({
-                vote: voteType,
-            })
-            .eq("id", existingVote.id);
-
-        if (updateError) {
-            throw updateError;
-        }
-
-        return {
-            action: "updated",
-            voteType,
-        };
-    }
-
-    // New vote
-    const { error: insertError } = await supabase
-        .from("votes")
-        .insert({
-            post_id: postId,
-            user_id: userId,
-            vote: voteType,
-        });
-
-    if (insertError) {
-        throw insertError;
-    }
-
-    return {
-        action: "created",
-        voteType,
-    };
-};
-
-// =====================================================
-// Like Section
-// =====================================================
 const LikeSection = ({ postId }) => {
-    const { user } = useAuth();
+    const { user, openAuthModal } = useAuth();
+    const { error: toastError } = useToast();
     const queryClient = useQueryClient();
 
     // ---------------------------------------------------
     // Fetch votes
     // ---------------------------------------------------
     const {
-        data: votes = [],
+        data: voteData = { votes: [], upvotes: 0, downvotes: 0 },
         isLoading,
         isError,
-        error,
     } = useQuery({
         queryKey: ["votes", postId],
-        queryFn: () => fetchVotes(postId),
+        queryFn: () => getVotes(postId),
         enabled: Boolean(postId),
-
-        // Don't constantly poll the database.
         staleTime: 10_000,
     });
 
-    // ---------------------------------------------------
+    const votes = voteData.votes || [];
+
     // Current user's vote
-    // ---------------------------------------------------
     const currentUserVote =
         votes.find((item) => item.user_id === user?.id)?.vote ?? null;
 
-    // ---------------------------------------------------
-    // Counts
-    // ---------------------------------------------------
-    const likeCount = votes.filter(
-        (item) => item.vote === 1
-    ).length;
-
-    const dislikeCount = votes.filter(
-        (item) => item.vote === -1
-    ).length;
+    const likeCount = voteData.upvotes ?? votes.filter((item) => item.vote === 1).length;
+    const dislikeCount = voteData.downvotes ?? votes.filter((item) => item.vote === -1).length;
 
     // ---------------------------------------------------
-    // Mutation
+    // Optimistic Mutation
     // ---------------------------------------------------
     const { mutate, isPending } = useMutation({
         mutationFn: (voteType) => {
-            if (!user) {
-                throw new Error("Please login first to vote");
+            return submitVote(postId, voteType);
+        },
+        onMutate: async (voteType) => {
+            await queryClient.cancelQueries({ queryKey: ["votes", postId] });
+            const previousVotes = queryClient.getQueryData(["votes", postId]);
+
+            queryClient.setQueryData(["votes", postId], (old = { votes: [], upvotes: 0, downvotes: 0 }) => {
+                const currentVote = old.votes?.find((v) => v.user_id === user?.id)?.vote;
+                let nextVotes = [...(old.votes || [])];
+                if (currentVote === voteType) {
+                    // toggle off
+                    nextVotes = nextVotes.filter((v) => v.user_id !== user?.id);
+                } else if (currentVote !== undefined) {
+                    // change vote
+                    nextVotes = nextVotes.map((v) => v.user_id === user?.id ? { ...v, vote: voteType } : v);
+                } else {
+                    // new vote
+                    nextVotes.push({ id: `temp-${Date.now()}`, post_id: postId, user_id: user?.id, vote: voteType });
+                }
+                const upvotes = nextVotes.filter((v) => v.vote === 1).length;
+                const downvotes = nextVotes.filter((v) => v.vote === -1).length;
+                return {
+                    ...old,
+                    votes: nextVotes,
+                    upvotes,
+                    downvotes,
+                    score: upvotes - downvotes,
+                };
+            });
+
+            return { previousVotes };
+        },
+        onError: (_err, _vars, context) => {
+            if (context?.previousVotes) {
+                queryClient.setQueryData(["votes", postId], context.previousVotes);
             }
-
-            return votePost({
-                postId,
-                userId: user.id,
-                voteType,
-            });
+            toastError("Failed to update reaction");
         },
-
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["votes", postId],
-            });
-        },
-
-        onError: (mutationError) => {
-            console.error("Vote error:", mutationError);
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["votes", postId] });
+            queryClient.invalidateQueries({ queryKey: ["post", postId] });
+            queryClient.invalidateQueries({ queryKey: ["posts"] });
         },
     });
+
+    const handleVote = (voteType) => {
+        if (!user) {
+            toastError("Please login to react to posts.");
+            openAuthModal();
+            return;
+        }
+        mutate(voteType);
+    };
 
     // ---------------------------------------------------
     // Loading
@@ -215,7 +132,7 @@ const LikeSection = ({ postId }) => {
             <button
                 type="button"
                 disabled={isPending}
-                onClick={() => mutate(1)}
+                onClick={() => handleVote(1)}
                 aria-label="Like post"
                 aria-pressed={currentUserVote === 1}
                 className={`
@@ -262,7 +179,7 @@ const LikeSection = ({ postId }) => {
             <button
                 type="button"
                 disabled={isPending}
-                onClick={() => mutate(-1)}
+                onClick={() => handleVote(-1)}
                 aria-label="Dislike post"
                 aria-pressed={currentUserVote === -1}
                 className={`

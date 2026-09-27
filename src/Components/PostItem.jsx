@@ -1,23 +1,8 @@
-import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "../supabase";
+import { useSearchParams, Link } from "react-router";
+import { X, Sparkles } from "lucide-react";
+import { getPosts } from "../api";
 import PostList from "./PostList";
-
-// =====================================================
-// Fetch posts
-// =====================================================
-const fetchPosts = async () => {
-    const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-    if (error) {
-        throw new Error(`Failed to fetch posts: ${error.message}`);
-    }
-
-    return data ?? [];
-};
 
 // =====================================================
 // Skeleton Card
@@ -26,7 +11,6 @@ const PostSkeleton = () => {
     return (
         <div className="animate-pulse overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-950">
             <div className="aspect-video w-full bg-zinc-200 dark:bg-zinc-800" />
-
             <div className="space-y-3 p-4">
                 <div className="h-5 w-3/4 rounded bg-zinc-200 dark:bg-zinc-800" />
                 <div className="h-4 w-full rounded bg-zinc-200 dark:bg-zinc-800" />
@@ -41,6 +25,10 @@ const PostSkeleton = () => {
 // Post Item / Post Feed
 // =====================================================
 const PostItem = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeCommunity = searchParams.get("community");
+    const activeSearch = searchParams.get("search");
+
     const {
         data: posts = [],
         error,
@@ -48,11 +36,15 @@ const PostItem = () => {
         isError,
         refetch,
     } = useQuery({
-        queryKey: ["posts"],
-        queryFn: fetchPosts,
+        queryKey: ["posts", activeCommunity, activeSearch],
+        queryFn: () => getPosts({ community: activeCommunity, search: activeSearch }),
         staleTime: 30_000,
         retry: 1,
     });
+
+    const clearFilters = () => {
+        setSearchParams({});
+    };
 
     // ===================================================
     // Loading
@@ -66,16 +58,7 @@ const PostItem = () => {
                         <div className="mt-2 h-4 w-64 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
                     </div>
 
-                    <div
-                        className="
-              grid
-              grid-cols-1
-              gap-5
-              sm:grid-cols-2
-              lg:grid-cols-3
-              xl:grid-cols-4
-            "
-                    >
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {Array.from({ length: 8 }).map((_, index) => (
                             <PostSkeleton key={index} />
                         ))}
@@ -96,26 +79,13 @@ const PostItem = () => {
                         <h2 className="font-semibold text-red-700 dark:text-red-300">
                             Unable to load posts
                         </h2>
-
                         <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                             {error?.message || "Something went wrong while loading posts."}
                         </p>
-
                         <button
                             type="button"
                             onClick={() => refetch()}
-                            className="
-                mt-4
-                rounded-full
-                bg-red-600
-                px-5
-                py-2.5
-                text-sm
-                font-semibold
-                text-white
-                transition
-                hover:bg-red-700
-              "
+                            className="mt-4 rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
                         >
                             Try Again
                         </button>
@@ -134,12 +104,30 @@ const PostItem = () => {
                 <div className="mx-auto w-full max-w-7xl">
                     <div className="rounded-3xl border border-zinc-200 bg-white p-10 text-center dark:border-white/10 dark:bg-zinc-950">
                         <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
-                            No posts yet
+                            No posts found
                         </h2>
-
                         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                            Be the first person to create a post.
+                            {activeCommunity || activeSearch
+                                ? "No posts match your current filter criteria."
+                                : "Be the first person to create a post in our community."}
                         </p>
+
+                        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                            {(activeCommunity || activeSearch) && (
+                                <button
+                                    onClick={clearFilters}
+                                    className="px-4 py-2 rounded-full border border-zinc-300 dark:border-zinc-700 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                                >
+                                    Clear Filters
+                                </button>
+                            )}
+                            <Link
+                                to="/create"
+                                className="px-5 py-2 rounded-full bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition"
+                            >
+                                Create Post
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -150,52 +138,51 @@ const PostItem = () => {
     // Posts
     // ===================================================
     return (
-        <section
-            className="
-        w-full
-        px-4
-        py-8
-        sm:px-6
-        lg:px-8
-      "
-        >
+        <section className="w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
             <div className="mx-auto w-full max-w-7xl">
-                {/* Heading */}
-                <div className="mb-6">
-                    <h2
-                        className="
-              text-2xl
-              font-bold
-              tracking-tight
-              text-zinc-900
-              sm:text-3xl
-              dark:text-white
-            "
-                    >
-                        Recent Posts
-                    </h2>
+                {/* Active Filter Banner */}
+                {(activeCommunity || activeSearch) && (
+                    <div className="mb-6 flex items-center justify-between rounded-2xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/70 dark:bg-indigo-950/40 p-4">
+                        <div className="flex items-center gap-2">
+                            <Sparkles className="text-indigo-600 dark:text-indigo-400" size={18} />
+                            <span className="text-sm font-semibold text-indigo-900 dark:text-indigo-200">
+                                {activeCommunity && `Filter: Community "${activeCommunity}"`}
+                                {activeSearch && `Search query: "${activeSearch}"`}
+                            </span>
+                        </div>
+                        <button
+                            onClick={clearFilters}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300 hover:underline"
+                        >
+                            <X size={14} />
+                            Reset Filter
+                        </button>
+                    </div>
+                )}
 
-                    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        Discover the latest posts from the community.
-                    </p>
+                {/* Heading */}
+                <div className="mb-6 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-white">
+                            {activeCommunity ? activeCommunity : "Community Feed"}
+                        </h2>
+                        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                            Discover stories, discussions, and creative uploads.
+                        </p>
+                    </div>
+
+                    <Link
+                        to="/create"
+                        className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm transition"
+                    >
+                        + New Post
+                    </Link>
                 </div>
 
                 {/* Responsive Grid */}
-                <div
-                    className="
-            grid
-            grid-cols-1
-            gap-5
-            sm:grid-cols-2
-            lg:grid-cols-3
-            xl:grid-cols-4
-          "
-                >
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {posts.map((post) => (
-                        <PostList
-                            key={post.id}
-                            post={post}
-                        />
+                        <PostList key={post.id} post={post} />
                     ))}
                 </div>
             </div>

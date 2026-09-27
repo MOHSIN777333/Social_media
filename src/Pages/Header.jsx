@@ -1,83 +1,86 @@
-import React, { useState } from 'react';
-import { Bell, LogOut, Search } from 'lucide-react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import DesktopNavbar from '../Components/DesktopNavbar';
 import MobileTopBar from '../Components/MobileTopBar';
-import MobileBottomNav from '../components/MobileBottomNav';
-import { useAuth } from "../context/Auth_Context"
-import { useNavigate } from 'react-router';
+import MobileBottomNav from '../Components/MobileBottomNav';
+import { useAuth } from "../context/Auth_Context";
+import { useToast } from "../context/Toast_Context";
 
 export default function Header() {
-    const [activeTab, setActiveTab] = useState('home');
-    const [searchQuery, setSearchQuery] = useState('');
-    const { signInWithGitHub, signOut, user } = useAuth();
-    const navigate = useNavigate()
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const { info } = useToast();
+    const { signOut, user, openAuthModal } = useAuth();
+    
+    const searchQuery = searchParams.get('search') || '';
+
+    const activeTab = location.pathname.startsWith('/communities')
+        ? 'communities'
+        : location.pathname.startsWith('/profile')
+        ? 'profile'
+        : location.pathname.startsWith('/create')
+        ? 'create'
+        : 'home';
 
     const navItems = [
-        { id: 'home', icon: 'home' },
-        { id: 'communities', icon: 'users' },
-        { id: 'notifications', icon: 'bell' },
-        { id: 'profile', icon: 'user' },
+        { id: 'home', label: 'Home', icon: 'home' },
+        { id: 'communities', label: 'Communities', icon: 'users' },
+        { id: 'notifications', label: 'Notifications', icon: 'bell' },
+        { id: 'profile', label: 'Profile', icon: 'user' },
     ];
 
-
-
-    const handleLogout = () => {
-        console.log('Logout clicked');
-        // Add your logout logic here
+    const handleTabChange = (tabId) => {
+        if (tabId === 'home') navigate('/');
+        else if (tabId === 'communities') navigate('/communities');
+        else if (tabId === 'profile') navigate('/profile');
+        else if (tabId === 'notifications') info('No new notifications');
     };
 
     const handleCreatePost = () => {
-        navigate("/create")
-        // Add your create post logic here
-    };
-
-    const handleCreateCommunity = () => {
-        console.log('Create Community clicked');
-        // Add your create community logic here
+        navigate('/create');
     };
 
     const handleSearch = (query) => {
-        setSearchQuery(query);
-        console.log('Searching for:', query);
-        // Add your search logic here
+        const trimmed = query.trim();
+        if (trimmed) {
+            navigate(`/?search=${encodeURIComponent(trimmed)}`);
+        } else {
+            navigate('/');
+        }
     };
 
     return (
         <>
-            {/* Desktop Navigation - Hidden on mobile, visible on md+ */}
+            {/* Desktop Navigation */}
             <div className="hidden md:block">
                 <DesktopNavbar
-                    navItems={navItems}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
                     user={user}
                     searchQuery={searchQuery}
                     onSearch={handleSearch}
-                    onLogout={handleLogout}
-                    onCreatePost={handleCreatePost}
-                    onCreateCommunity={handleCreateCommunity}
                     signOut={signOut}
-                    signInWithGitHub={signInWithGitHub}
+                    signInWithGitHub={openAuthModal}
+                    openAuthModal={openAuthModal}
                 />
             </div>
 
             {/* Mobile Navigation */}
-            <>
+            <div className="md:hidden">
                 <MobileTopBar
                     user={user}
                     signOut={signOut}
-                    signInWithGitHub={signInWithGitHub}
-                    notificationCount={3}
+                    signInWithGitHub={openAuthModal}
+                    openAuthModal={openAuthModal}
+                    notificationCount={0}
+                    onSearch={handleSearch}
+                    searchQuery={searchQuery}
                 />
-                {/* Main Content Area with padding for fixed mobile navbar */}
                 <MobileBottomNav
                     navItems={navItems}
                     activeTab={activeTab}
-                    setActiveTab={setActiveTab}
+                    setActiveTab={handleTabChange}
                     onCreatePost={handleCreatePost}
                 />
-            </>
-
+            </div>
         </>
     );
 }

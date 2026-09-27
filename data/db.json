@@ -1,0 +1,158 @@
+{
+  "users": [
+    {
+      "id": "user-1",
+      "name": "Mohsin Ali",
+      "username": "mohsinali",
+      "email": "mohsinali031332@gmail.com",
+      "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
+      "bio": "Full-Stack Developer & Creator of Social Media App",
+      "createdAt": "2026-08-24T18:36:32.901Z"
+    },
+    {
+      "id": "user-2",
+      "name": "Design Studio",
+      "username": "designstudio",
+      "email": "design@example.com",
+      "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+      "bio": "Designing interfaces and digital systems with passion.",
+      "createdAt": "2026-09-08T18:36:32.901Z"
+    },
+    {
+      "id": "user-3",
+      "name": "Alex River",
+      "username": "alexriver",
+      "email": "alex@example.com",
+      "avatarUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+      "bio": "Nature photographer, camper, and trail lover.",
+      "createdAt": "2026-09-13T18:36:32.901Z"
+    }
+  ],
+  "communities": [
+    {
+      "id": "comm-1",
+      "name": "Tech & Code",
+      "slug": "tech-code",
+      "description": "Discussions around modern web frameworks, React, Node.js, and design.",
+      "icon": "💻",
+      "memberCount": 1420
+    },
+    {
+      "id": "comm-2",
+      "name": "Design & UI",
+      "slug": "design-ui",
+      "description": "Showcasing clean layouts, micro-interactions, dark themes, and UX patterns.",
+      "icon": "🎨",
+      "memberCount": 981
+    },
+    {
+      "id": "comm-3",
+      "name": "Photography",
+      "slug": "photography",
+      "description": "Landscape, street, and nature photography from creators worldwide.",
+      "icon": "📷",
+      "memberCount": 650
+    }
+  ],
+  "posts": [
+    {
+      "id": "post-1790517382724-htx8",
+      "title": "qdwfd",
+      "content": "wfewfefe",
+      "image": "/uploads/1790517382713-jw47er.png",
+      "authorId": "user-1",
+      "user_name": "Mohsin Ali",
+      "avatar_url": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
+      "community": "Photography",
+      "created_at": "2026-09-27T13:56:22.724Z"
+    },
+    {
+      "id": "post-1",
+      "title": "Welcome to our new social media platform!",
+      "content": "Excited to introduce our custom Node & Express powered community feed! You can now create rich posts with images, react with upvotes and downvotes, join communities, and discuss with members.",
+      "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+      "authorId": "user-1",
+      "user_name": "Mohsin Ali",
+      "avatar_url": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
+      "community": "Tech & Code",
+      "created_at": "2026-09-22T18:36:32.901Z"
+    },
+    {
+      "id": "post-2",
+      "title": "Exploring Modern UI Design & Clean Dark Mode",
+      "content": "Clean layouts, subtle gradients, and dark mode support make for an enjoyable browsing experience. We designed this interface to look polished on both desktop and mobile screens.",
+      "image": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80",
+      "authorId": "user-2",
+      "user_name": "Design Studio",
+      "avatar_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+      "community": "Design & UI",
+      "created_at": "2026-09-23T12:36:32.901Z"
+    },
+    {
+      "id": "post-3",
+      "title": "Photography in Nature: Morning Mountain Escapes",
+      "content": "Captured this tranquil shot during an early morning hike through the mountains. Nothing beats fresh air, misty ridges, and quiet scenery.",
+      "image": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80",
+      "authorId": "user-3",
+      "user_name": "Alex River",
+      "avatar_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+      "community": "Photography",
+      "created_at": "2026-09-23T16:36:32.901Z"
+    }
+  ],
+  "votes": [
+    {
+      "id": "vote-1",
+      "post_id": "post-1",
+      "user_id": "user-2",
+      "vote": 1
+    },
+    {
+      "id": "vote-2",
+      "post_id": "post-1",
+      "user_id": "user-3",
+      "vote": 1
+    },
+    {
+      "id": "vote-3",
+      "post_id": "post-2",
+      "user_id": "user-1",
+      "vote": 1
+    },
+    {
+      "id": "vote-4",
+      "post_id": "post-3",
+      "user_id": "user-1",
+      "vote": 1
+    }
+  ],
+  "comments": [
+    {
+      "id": "comment-1",
+      "post_id": "post-1",
+      "user_id": "user-2",
+      "user_name": "Design Studio",
+      "avatar_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+      "content": "Huge congratulations on launching this backend! The responsiveness and layout feel so smooth.",
+      "created_at": "2026-09-22T22:36:32.901Z"
+    },
+    {
+      "id": "comment-2",
+      "post_id": "post-1",
+      "user_id": "user-3",
+      "user_name": "Alex River",
+      "avatar_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+      "content": "Can’t wait to share more high-res photography here!",
+      "created_at": "2026-09-23T00:36:32.901Z"
+    },
+    {
+      "id": "comment-1790188596901-umkp",
+      "post_id": "post-1",
+      "user_id": "user-1",
+      "user_name": "Mohsin Ali",
+      "avatar_url": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
+      "content": "Testing backend comments via Express API!",
+      "created_at": "2026-09-23T18:36:36.901Z"
+    }
+  ]
+}
