@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { getCurrentUser, loginUser, loginWithGitHub } from "../api";
+import { getCurrentUser, loginUser, loginWithGitHub, registerUser } from "../api";
 
 const AuthContext = createContext(null);
 
@@ -110,6 +110,23 @@ export function AuthProvider({ children }) {
         return formatted;
     };
 
+    const register = async ({ name, email, username, password, bio, avatarUrl }) => {
+        const registered = await registerUser({ name, email, username, password, bio, avatarUrl });
+        const formatted = {
+            id: registered.id,
+            email: registered.email,
+            name: registered.name,
+            username: registered.username,
+            bio: registered.bio,
+            user_metadata: {
+                full_name: registered.name,
+                avatar_url: registered.avatarUrl,
+            },
+        };
+        setUser(formatted);
+        return formatted;
+    };
+
     const updateUser = (updatedBackendUser) => {
         if (!updatedBackendUser) return;
         const formatted = {
@@ -145,6 +162,7 @@ export function AuthProvider({ children }) {
         closeAuthModal,
         signInWithGitHub,
         switchAccount,
+        register,
         updateUser,
         signOut,
     }), [user, isAuthModalOpen]);

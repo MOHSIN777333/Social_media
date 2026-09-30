@@ -289,15 +289,32 @@ export async function getCurrentUser() {
   return data.user || null;
 }
 
-export async function loginUser({ email, username }) {
+export async function loginUser({ email, username, password }) {
   const res = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, username }),
+    body: JSON.stringify({ email, username, password }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Failed to log in');
+  }
+  const data = await res.json();
+  if (data.user) {
+    localStorage.setItem('active_user', JSON.stringify(data.user));
+  }
+  return data.user;
+}
+
+export async function registerUser({ name, email, username, password, bio, avatarUrl }) {
+  const res = await fetch(`${BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, username, password, bio, avatarUrl }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to register');
   }
   const data = await res.json();
   if (data.user) {

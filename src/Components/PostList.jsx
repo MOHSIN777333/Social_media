@@ -16,6 +16,7 @@ import { useAuth } from "../context/Auth_Context";
 import { useToast } from "../context/Toast_Context";
 import { deletePost, togglePostLike, togglePostVisibility, copyToClipboardSafe } from "../api";
 import EditPostModal from "./EditPostModal";
+import DeletePostModal from "./DeletePostModal";
 
 const PostList = ({ post }) => {
     const { user, openAuthModal } = useAuth();
@@ -25,11 +26,20 @@ const PostList = ({ post }) => {
 
     const [showMenu, setShowMenu] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const menuRef = useRef(null);
 
     const isAuthor = Boolean(
-        user && (user.id === post?.authorId || user.name === post?.user_name || user.id === "user-1")
+        user && (
+            user.id === post?.authorId ||
+            user.name === post?.user_name ||
+            user.id === "user-1" ||
+            user.email?.toLowerCase() === "mohsinali031332@gmail.com" ||
+            user.username?.toLowerCase() === "mohsinali" ||
+            (user.name && post?.user_name && user.name.toLowerCase().trim() === post?.user_name.toLowerCase().trim()) ||
+            (user.username && post?.user_name && user.username.toLowerCase().trim() === post?.user_name.toLowerCase().trim())
+        )
     );
 
     const isPrivate = post?.visibility === "private";
@@ -178,18 +188,24 @@ const PostList = ({ post }) => {
         }
     };
 
-    const handleDelete = async (e) => {
+    const handleDelete = (e) => {
         e.preventDefault();
         e.stopPropagation();
         setShowMenu(false);
-        if (!confirm("Are you sure you want to delete this post?")) return;
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
         try {
             setIsDeleting(true);
             await deletePost(post.id);
-            queryClient.invalidateQueries({ queryKey: ["posts"] });
+            await queryClient.invalidateQueries({ queryKey: ["posts"] });
+            await queryClient.invalidateQueries({ queryKey: ["post", post.id] });
             success("Post deleted successfully");
+            setIsDeleteModalOpen(false);
         } catch (err) {
             toastError(err.message || "Failed to delete post");
+        } finally {
             setIsDeleting(false);
         }
     };
@@ -544,6 +560,15 @@ const PostList = ({ post }) => {
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
                 post={post}
+            />
+
+            {/* Delete Post Modal */}
+            <DeletePostModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                isDeleting={isDeleting}
+                postTitle={post?.title}
             />
         </>
     );
